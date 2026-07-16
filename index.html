@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZenStudy - Mobile Workspace</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+    <!-- MOBILE HEADER TOP BAR -->
+    <header class="mobile-top-bar">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="mobile-brand">ZenStudy 🪐</div>
+        <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+    </header>
+
+    <!-- SIDEBAR OVERLAY FOR MOBILE -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="collapsed">
+        <div class="brand">
+            <span>Menu Options</span>
+            <button onclick="toggleSidebar()" class="close-sidebar-btn">×</button>
+        </div>
+        <ul class="nav-links">
+            <li><a onclick="navigateTo('dashboard')" id="nav-dashboard" class="active">🏠 Dashboard</a></li>
+            <li><a onclick="navigateTo('syllabus')" id="nav-syllabus">📋 Syllabus Vault</a></li>
+            <li><a onclick="navigateTo('notes')" id="nav-notes">📚 PDF Notes</a></li>
+            <li><a onclick="navigateTo('slides')" id="nav-slides">🖼️ Revision Slides</a></li>
+            <li><hr style="border-color: rgba(255,255,255,0.1); margin: 0.5rem 0;"></li>
+            <li><a href="https://anisha-audio-room.github.io" target="_blank" style="color: #38bdf8;">🎧 Audio Room ↗</a></li>
+            <li><a href="https://anisha-test-series.github.io" target="_blank" style="color: #38bdf8;">📝 Test Series ↗</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <button onclick="downloadMasterZip()" class="btn-action export-btn">⚡ Export Workspace (.zip)</button>
+        </div>
+    </aside>
+
+    <!-- MAIN VIEWPORT -->
+    <main id="main-content">
+
+        <!-- VIEW 1: DASHBOARD -->
+        <div id="view-dashboard" class="content-view">
+            <h1>Anisha's Dashboard ☕</h1>
+            <p class="subtitle">Real-time study metrics & checklist.</p>
+            
+            <div class="grid-stats">
+                <div class="stat-card">
+                    <h3>Syllabus Progress</h3>
+                    <h2 id="stats-syllabus-percent">0%</h2>
+                    <div class="progress-bar-container"><div class="progress-bar-fill" id="syllabus-progress-bar"></div></div>
+                </div>
+                <div class="stat-card">
+                    <h3>Topics Mastered</h3>
+                    <h2 id="stats-decks-total">0 / 0</h2>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Interactive Checklist 🎯</h2>
+                <p class="card-desc">Tap topics to instantly update your statistics.</p>
+                <div id="dashboard-tracker-list"></div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: SYLLABUS -->
+        <div id="view-syllabus" class="content-view hidden">
+            <h1>Syllabus Vault 📋</h1>
+            <p class="subtitle">Quick access to official syllabus structure.</p>
+            <div class="grid-cards" id="syllabus-cards-container"></div>
+        </div>
+
+        <!-- VIEW 3: NOTES -->
+        <div id="view-notes" class="content-view hidden">
+            <h1>PDF Notes Center 📚</h1>
+            <p class="subtitle">Comprehensive study guides for easy reading.</p>
+            <div class="grid-cards" id="notes-cards-container"></div>
+        </div>
+
+        <!-- VIEW 4: REVISION SLIDES -->
+        <div id="view-slides" class="content-view hidden">
+            <h1 id="slides-title">Revision Slide Decks 🖼️</h1>
+            <p id="slides-subtitle" class="subtitle">Select a subject below.</p>
+            <div id="slides-container"></div>
+        </div>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
