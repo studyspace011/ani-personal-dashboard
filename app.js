@@ -1,8 +1,9 @@
 // --- 🗂️ MASTER ACADEMIC DATABASE ---
-// Keys match exactly with your GitHub folder structures and file names
+// Keys and values are explicitly synchronized with your exact GitHub file structures
 const academicDatabase = {
     "MJC-5-Eng": {
         name: "American Literature",
+        repoName: "MJC-5_Eng",
         folder: "MJC-5-Eng",
         units: [
             { title: "Unit 1: Drama", topics: [{ code: "1.1", name: "Tennessee Williams: The Glass Menagerie" }] },
@@ -23,6 +24,7 @@ const academicDatabase = {
     },
     "MJC-6-Eng": {
         name: "Language and Linguistics",
+        repoName: "MJC-6_Eng",
         folder: "MJC-6-Eng",
         units: [
             { title: "Unit 1: Core Concepts", topics: [
@@ -43,6 +45,7 @@ const academicDatabase = {
     },
     "MJC-7-Eng": {
         name: "British Poetry and Drama : 17th Century",
+        repoName: "MJC-7_Eng",
         folder: "MJC-7-Eng",
         units: [
             { title: "Unit 1: Epic Poetry", topics: [{ code: "1.1", name: "John Milton: Paradise Lost (Book 1)" }] },
@@ -51,8 +54,9 @@ const academicDatabase = {
             { title: "Unit 4: Jacobean Tragedy", topics: [{ code: "4.1", name: "Thomas Middleton: Women Beware Women" }] }
         ]
     },
-    "MIC-4_Urdu": {
+    "MIC-4-Urdu": {
         name: "Study of Urdu Ghazal",
+        repoName: "MIC-4_Urdu",
         folder: "MIC-4-Urdu",
         units: [
             { title: "Unit 1: Tareef-o-Tareekh", topics: [
@@ -71,6 +75,7 @@ const academicDatabase = {
     },
     "AEC-4": {
         name: "Social Service / Scout & Guide / Sports",
+        repoName: "AEC-4",
         folder: "AEC-4",
         units: [
             { title: "Unit 1: NCC General", topics: [{ code: "1.1", name: "Introduction to NCC: Aims & Organization" }] },
@@ -143,7 +148,7 @@ function renderDashboard() {
     Object.keys(academicDatabase).forEach(subCode => {
         const subjectBox = document.createElement('div');
         subjectBox.style.marginBottom = '1.25rem';
-        subjectBox.innerHTML = `<h3 style="font-size:1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.3rem; margin-bottom: 0.5rem; color:var(--accent);">${subCode.replace('_', '-')}</h3>`;
+        subjectBox.innerHTML = `<h3 style="font-size:1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.3rem; margin-bottom: 0.5rem; color:var(--accent);">${subCode}</h3>`;
 
         academicDatabase[subCode].units.forEach(unit => {
             unit.topics.forEach(topic => {
@@ -177,55 +182,59 @@ function toggleTrackItem(key) {
     renderDashboard();
 }
 
-// --- 2. VAULT SYLLABUS CONTROLLER (GitHub Matching Strategy) ---
+// --- 2. VAULT SYLLABUS CONTROLLER (Strict Underscore Rule matching your GitHub image) ---
 function renderSyllabusPage() {
     const container = document.getElementById('syllabus-cards-container');
     container.innerHTML = '';
 
     Object.keys(academicDatabase).forEach(code => {
-        // Generates file names matching the screenshot exactly
-        let fileName = `${code}_Syllabus.pdf`;
-        if(code === "MJC-7-Eng") fileName = "MJC-7-Eng_Syllabys.pdf"; // Preserved spelling error from repo snapshot
+        const repoPrefix = academicDatabase[code].repoName;
+        
+        // Exact spelling match logic according to your repository pictures
+        let fileName = `${repoPrefix}_Syllabus.pdf`;
+        if (code === "MJC-7-Eng") {
+            fileName = "MJC-7-Eng_Syllabys.pdf"; // Matches the typo "Syllabys.pdf" from your exact screen capture
+        }
 
         const card = document.createElement('div');
         card.className = 'subject-card';
         card.innerHTML = `
-            <h3>${code.replace('_', '-')}</h3>
+            <h3>${code}</h3>
             <p style="color: var(--text-muted); font-size:0.85rem; margin: 0.2rem 0 1rem;">${academicDatabase[code].name}</p>
             <div class="btn-container">
                 <a href="recourses/syllabus/${fileName}" target="_blank" class="btn-action">👁️ View</a>
-                <a href="recourses/syllabus/${fileName}" download="${fileName}" class="btn-action btn-secondary">⬇️ Download</a>
+                <a href="recourses/syllabus/${fileName}" download class="btn-action btn-secondary">⬇️ Download</a>
             </div>
         `;
         container.appendChild(card);
     });
 }
 
-// --- 3. ACADEMIC NOTES CONTROLLER ---
+// --- 3. ACADEMIC NOTES CONTROLLER (Strict Underscore Rule matching your GitHub image) ---
 function renderNotesPage() {
     const container = document.getElementById('notes-cards-container');
     container.innerHTML = '';
 
     Object.keys(academicDatabase).forEach(code => {
-        let fileName = `${code}_Notes.pdf`;
-        if(code === "MIC-4_Urdu") fileName = "MIC-4-Urdu_Notes.pdf";
+        const repoPrefix = academicDatabase[code].repoName;
+        const fileName = `${repoPrefix}_Notes.pdf`; // Generates e.g. recourses/notes/MJC-5_Eng_Notes.pdf
 
         const card = document.createElement('div');
         card.className = 'subject-card';
         card.style.borderColor = "#10b981";
         card.innerHTML = `
-            <h3>${code.replace('_', '-')}</h3>
+            <h3>${code}</h3>
             <p style="color: var(--text-muted); font-size:0.85rem; margin: 0.2rem 0 1rem;">${academicDatabase[code].name}</p>
             <div class="btn-container">
                 <a href="recourses/notes/${fileName}" target="_blank" class="btn-action" style="background:#10b981">📖 Open Notes</a>
-                <a href="recourses/notes/${fileName}" download="${fileName}" class="btn-action btn-secondary">⬇/PDF</a>
+                <a href="recourses/notes/${fileName}" download class="btn-action btn-secondary">⬇/PDF</a>
             </div>
         `;
         container.appendChild(card);
     });
 }
 
-// --- 4. REVISION SLIDES DRAWER ---
+// --- 4. REVISION SLIDES DRAWER (With Dummy Fallback to ensure seamless execution) ---
 function renderSlidesSubjectLanding() {
     document.getElementById('slides-title').innerText = "Revision Slide Decks 🖼️";
     document.getElementById('slides-subtitle').innerText = "Select subject folder to open slides.";
@@ -239,7 +248,7 @@ function renderSlidesSubjectLanding() {
         card.className = 'subject-card';
         card.style.cursor = 'pointer';
         card.innerHTML = `
-            <h3>${code.replace('_', '-')}</h3>
+            <h3>${code}</h3>
             <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.3rem;">${academicDatabase[code].name}</p>
             <div style="font-size:0.8rem; margin-top:0.8rem; color:var(--accent); font-weight:600;">Open Folder →</div>
         `;
@@ -250,7 +259,7 @@ function renderSlidesSubjectLanding() {
 
 function renderSlideTopicsList(subCode) {
     const targetFolder = academicDatabase[subCode].folder;
-    document.getElementById('slides-title').innerText = `${subCode.replace('_', '-')} Slides`;
+    document.getElementById('slides-title').innerText = `${subCode} Slides`;
     
     const container = document.getElementById('slides-container');
     container.innerHTML = `<button class="btn-action btn-secondary" onclick="renderSlidesSubjectLanding()" style="margin-bottom: 1.25rem; flex:none; width:auto; padding:0.6rem 1rem;">← Back</button>`;
@@ -261,14 +270,21 @@ function renderSlideTopicsList(subCode) {
         box.innerHTML = `<h3 style="margin-bottom:0.75rem; border-bottom:1px solid var(--border); padding-bottom:0.4rem; font-size:1.05rem;">${unit.title}</h3>`;
 
         unit.topics.forEach(topic => {
-            const slideFilePath = `recourses/slides/${targetFolder}/${topic.code}.pdf`;
+            // Target production path rule requested: recourses/slides/[Folder_Name]/[1.1, 1.2, etc].pdf
+            const realPath = `recourses/slides/${targetFolder}/${topic.code}.pdf`;
+            
+            // Safe fallback rule for seamless preview rendering without breaking the dashboard UI
+            const dummyPreviewPath = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
             const row = document.createElement('div');
             row.className = 'tracker-item';
             row.style.padding = '0.6rem 0';
             row.innerHTML = `
                 <span style="font-size:0.85rem;"><strong>File: ${topic.code}.pdf</strong><br><span style="color:var(--text-muted);">${topic.name}</span></span>
-                <a href="${slideFilePath}" target="_blank" class="btn-action" style="flex:none; width:80px; padding:0.4rem 0.5rem; font-size:0.75rem;">🖼️ Open</a>
+                <div class="btn-container" style="flex:none; width:150px; margin-top:0;">
+                    <a href="${realPath}" target="_blank" class="btn-action" style="padding:0.4rem; font-size:0.75rem;">🖼️ Live</a>
+                    <a href="${dummyPreviewPath}" target="_blank" class="btn-action btn-secondary" style="padding:0.4rem; font-size:0.75rem;">👀 Dummy</a>
+                </div>
             `;
             box.appendChild(row);
         });
