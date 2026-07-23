@@ -3,33 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ani's Study Space</title>
+    <title>Study Workspace</title>
+    
+    <!-- PWA Link Setup -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
-    <!-- GREETING POPUP MODAL -->
-    <div id="greeting-modal" class="modal-overlay">
-        <div class="modal-card">
-            <div class="modal-icon">
-                <svg class="icon-svg-lg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8a8 8 0 0 1-8 8z"/></svg>
-            </div>
-            <h2 id="modal-greeting-text">Good Day, Ani... Jii</h2>
-            <p>Welcome back to your study workspace. Ready to focus today?</p>
-            <button onclick="closeGreetingModal()" class="btn-action btn-modal">Let's Study!</button>
-        </div>
-    </div>
-
+    <!-- Header me ya navigation me jahan button dikhana ho -->
+<button id="pwa-install-btn" class="btn-action hidden" onclick="triggerPWAInstall()" style="background: #10b981; color: white;">
+    <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7l7-7zM5 18v2h14v-2H5z"/></svg>
+    Install App
+</button>
     <!-- MOBILE HEADER TOP BAR -->
     <header class="mobile-top-bar">
         <button class="menu-btn" onclick="toggleSidebar()" aria-label="Toggle Menu">
             <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         </button>
-        <div class="mobile-brand">Ani's Study Space</div>
-        <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
-            <svg class="icon-svg theme-icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26a5.403 5.403 0 0 1-5.4-5.4c0-1.81.89-3.42 2.26-4.4C12.92 3.04 12.46 3 12 3z"/></svg>
-        </button>
+        <div class="mobile-brand">Study Workspace</div>
+        <div style="display:flex; align-items:center; gap:4px;">
+            <button id="pwa-install-mobile" class="theme-btn hidden" onclick="installPWA()" title="Install App">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7l7-7zM5 18v2h14v-2H5z"/></svg>
+            </button>
+            <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
+                <svg class="icon-svg theme-icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26a5.403 5.403 0 0 1-5.4-5.4c0-1.81.89-3.42 2.26-4.4C12.92 3.04 12.46 3 12 3z"/></svg>
+            </button>
+        </div>
     </header>
 
     <!-- SIDEBAR OVERLAY FOR MOBILE -->
@@ -72,16 +78,16 @@
                 </a>
             </li>
             <li><hr class="nav-divider"></li>
+            <li id="pwa-install-sidebar-item" class="hidden">
+                <a onclick="installPWA()" style="color: #10b981; cursor: pointer;">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7l7-7zM5 18v2h14v-2H5z"/></svg>
+                    Install App
+                </a>
+            </li>
             <li>
                 <a href="https://studyspace011.github.io/Ani-audio-studio/" target="_blank" class="external-link">
                     <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55c-2.21 0-4 1.79-4 4s1.79 4 4 4s4-1.79 4-4V7h4V3h-6z"/></svg>
                     Audio Room
-                </a>
-            </li>
-            <li>
-                <a href="https://studyspace011.github.io/ani-personal-dashboard/under-maintenance.html" target="_blank" class="external-link">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                    Test Series
                 </a>
             </li>
         </ul>
@@ -93,7 +99,7 @@
         <!-- VIEW 1: DASHBOARD -->
         <div id="view-dashboard" class="content-view">
             <div class="header-box">
-                <h1>Ani's Study Space</h1>
+                <h1>Study Workspace</h1>
                 <p class="subtitle">Real-time study metrics & syllabus progress.</p>
             </div>
             
