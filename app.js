@@ -2,6 +2,11 @@
 const GITHUB_USER = "studyspace011";
 const GITHUB_REPO = "ani-personal-dashboard";
 
+// PDF.js Worker Configuration
+if (window['pdfjs-dist/build/pdf']) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+}
+
 // --- MASTER ACADEMIC DATABASE ---
 const academicDatabase = {
     "MJC-5-Eng": {
@@ -45,20 +50,20 @@ const academicDatabase = {
         ]
     },
     "MJC-7-Eng": {
-    name: "British Poetry and Drama : 17th Century",
-    tag: "mjc-7-english",
-    units: [
-        { title: "Unit 1: Epic Poetry", topics: [{ code: "1.1.1.1", name: "John Milton: Paradise Lost (Book 1)" }] },
-        { 
-            title: "Unit 2: Metaphysical Poetry", topics: [
-                { code: "2.1.1.1", name: "John Donne: The Sunne Rising" },
-                { code: "2.1.1.2", name: "John Donne: The Good Morrow" },
-                { code: "2.1.1.3", name: "John Donne: A Hymn to God the Father" },
-                { code: "2.1.1.4", name: "John Donne: Death Be Not Proud" }
-            ] 
-        },
-        { title: "Unit 3: Jacobean Comedy / Drama", topics: [{ code: "3.1.1.1", name: "Ben Jonson: The Alchemist" }] },
-        { title: "Unit 4: Jacobean Tragedy / Drama", topics: [{ code: "4.1.1.1", name: "Thomas Middleton: Women Beware Women" }] }
+        name: "British Poetry and Drama : 17th Century",
+        tag: "mjc-7-english",
+        units: [
+            { title: "Unit 1: Epic Poetry", topics: [{ code: "1.1.1.1", name: "John Milton: Paradise Lost (Book 1)" }] },
+            { 
+                title: "Unit 2: Metaphysical Poetry", topics: [
+                    { code: "2.1.1.1", name: "John Donne: The Sunne Rising" },
+                    { code: "2.1.1.2", name: "John Donne: The Good Morrow" },
+                    { code: "2.1.1.3", name: "John Donne: A Hymn to God the Father" },
+                    { code: "2.1.1.4", name: "John Donne: Death Be Not Proud" }
+                ] 
+            },
+            { title: "Unit 3: Jacobean Comedy / Drama", topics: [{ code: "3.1.1.1", name: "Ben Jonson: The Alchemist" }] },
+            { title: "Unit 4: Jacobean Tragedy / Drama", topics: [{ code: "4.1.1.1", name: "Thomas Middleton: Women Beware Women" }] }
         ]
     },
     "MIC-4-Urdu": {
@@ -129,30 +134,23 @@ const academicDatabase = {
     }
 };
 
+// --- STORAGE SYSTEM ---
 function safeReadStorage(key, fallback) {
     if (key !== 'syllabusTracker') return fallback;
     try {
         const savedValue = localStorage.getItem(key);
         return savedValue ? JSON.parse(savedValue) : fallback;
-    } catch (error) {
-        console.warn(`Unable to read ${key}:`, error);
-        return fallback;
-    }
+    } catch (error) { return fallback; }
 }
 
 function safeWriteStorage(key, value) {
     if (key !== 'syllabusTracker') return;
-    try {
-        localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-        console.warn(`Unable to save ${key}:`, error);
-    }
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) {}
 }
 
 function showToast(message) {
     const toast = document.getElementById('app-toast');
     if (!toast) return;
-
     toast.textContent = message;
     toast.classList.add('show');
     clearTimeout(showToast.timer);
@@ -165,59 +163,116 @@ function resetBrowserAppData() {
     if (typeof localStorage === 'undefined') return;
     const keepKey = 'syllabusTracker';
     const keysToRemove = [];
-
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key !== keepKey) keysToRemove.push(key);
     }
-
     keysToRemove.forEach((key) => localStorage.removeItem(key));
     syllabusTracker = safeReadStorage('syllabusTracker', {});
 }
 
-// --- HELPER: GITHUB RELEASE URL CONVERTER FOR BROWSER VIEWING ---
-function getGithubPdfViewerUrl(tag, filename) {
-    const rawDownloadUrl = `https://github.com/${GITHUB_USER}/${GITHUB_REPO}/releases/download/${tag}/${filename}`;
-    return `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(rawDownloadUrl)}`;
+// --- MODAL ENGINE FOR IN-APP PREVIEW ---
+function setupPdfModal() {
+    if (document.getElementById('pdf-modal-wrapper')) return;
+
+    const modalHtml = `
+    <div id="pdf-modal-wrapper" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
+        <div style="width:95%; max-width:900px; height:90vh; background:var(--bg-card, #1e293b); color:#fff; border-radius:8px; display:flex; flex-direction:column; overflow:hidden;">
+            <div style="padding:10px 16px; background:var(--bg-hover, #0f172a); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155;">
+                <span id="pdf-modal-title" style="font-weight:bold; font-size:0.95rem;">Document Viewer</span>
+                <button onclick="closePdfModal()" style="background:#ef4444; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer; font-weight:bold;">Close ✕</button>
+            </div>
+            <div id="pdf-canvas-container" style="flex:1; overflow:auto; padding:15px; text-align:center; background:#525659;">
+                <div id="pdf-loader-text" style="color:#fff; margin-top:20px;">Loading PDF Document...</div>
+            </div>
+        </div>
+    </div>`;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-function getGithubPdfDownloadUrl(tag, filename) {
+function closePdfModal() {
+    const modal = document.getElementById('pdf-modal-wrapper');
+    if (modal) modal.style.display = 'none';
+    const container = document.getElementById('pdf-canvas-container');
+    if (container) container.innerHTML = '<div id="pdf-loader-text" style="color:#fff; margin-top:20px;">Loading PDF Document...</div>';
+}
+
+// jsDelivr CDN link (No CORS Error)
+function getCdnReleaseUrl(tag, filename) {
+    return `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${tag}/${filename}`;
+}
+
+// Direct GitHub Link for Downloads
+function getGithubReleaseUrl(tag, filename) {
     return `https://github.com/${GITHUB_USER}/${GITHUB_REPO}/releases/download/${tag}/${filename}`;
 }
 
+// IN-APP VIEW ENGINE (Renders on Canvas)
 async function openReleaseAsset(tag, filename) {
-    const viewUrl = getGithubPdfViewerUrl(tag, filename);
-    window.open(viewUrl, '_blank', 'noopener,noreferrer');
-}
+    setupPdfModal();
+    const modal = document.getElementById('pdf-modal-wrapper');
+    const container = document.getElementById('pdf-canvas-container');
+    const title = document.getElementById('pdf-modal-title');
+    
+    modal.style.display = 'flex';
+    title.innerText = filename;
+    container.innerHTML = '<div style="color:#fff; margin-top:20px;">Fetching document...</div>';
 
-async function downloadReleaseAsset(tag, filename, displayName) {
-    const downloadUrl = getGithubPdfDownloadUrl(tag, filename);
+    const url = getCdnReleaseUrl(tag, filename);
+
     try {
-        const response = await fetch(downloadUrl, {
-            method: 'GET',
-            headers: { 'User-Agent': 'StudyWorkspaceApp' }
-        });
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("File fetch failed");
+        const arrayBuffer = await response.arrayBuffer();
 
-        if (!response.ok) {
-            throw new Error(`Download failed with ${response.status}`);
+        if (window.pdfjsLib) {
+            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+            const pdf = await loadingTask.promise;
+            
+            container.innerHTML = ''; // Clear loader
+            
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 1.2 });
+                const canvas = document.createElement('canvas');
+                canvas.style.margin = "10px auto";
+                canvas.style.display = "block";
+                canvas.style.boxShadow = "0 4px 8px rgba(0,0,0,0.4)";
+                
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+                container.appendChild(canvas);
+            }
+        } else {
+            const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+            const blobUrl = URL.createObjectURL(blob);
+            container.innerHTML = `<iframe src="${blobUrl}" style="width:100%; height:100%; border:none;"></iframe>`;
         }
-
-        const blob = await response.blob();
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = displayName || filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
-        showToast('Download started.');
-    } catch (error) {
-        console.warn('Unable to download asset:', error);
-        showToast('Unable to download file. Try direct link.');
+    } catch (e) {
+        console.error("PDF View Error:", e);
+        const directDownloadUrl = getGithubReleaseUrl(tag, filename);
+        container.innerHTML = `<div style="color:#f87171; margin-top:20px;">Unable to preview file.<br><br><a href="${directDownloadUrl}" target="_blank" style="color:#60a5fa; text-decoration:underline;">Click here to download file directly</a></div>`;
     }
 }
 
-// --- DARK / LIGHT THEME CONTROLLER ---
+// DIRECT DOWNLOAD ENGINE
+function downloadReleaseAsset(tag, filename, displayName) {
+    showToast("Starting download...");
+    const downloadUrl = getGithubReleaseUrl(tag, filename);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.setAttribute('download', displayName || filename);
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// --- THEME & NAV CONTROLLERS ---
 const sunSVG = `<path fill="currentColor" d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5s5-2.24 5-5s-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>`;
 const moonSVG = `<path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26a5.403 5.403 0 0 1-5.4-5.4c0-1.81.89-3.42 2.26-4.4C12.92 3.04 12.46 3 12 3z"/>`;
 
@@ -233,11 +288,9 @@ function toggleTheme() {
     applyTheme(currentTheme);
 }
 
-// --- MOBILE SIDEBAR CONTROLLER ---
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
-    
     if (sidebar.classList.contains('collapsed')) {
         sidebar.classList.remove('collapsed');
         if (window.innerWidth < 768) overlay.style.display = 'block';
@@ -247,18 +300,20 @@ function toggleSidebar() {
     }
 }
 
-// --- ROUTER ENGINE ---
 function navigateTo(target) {
     document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
     const targetEl = document.getElementById(`nav-${target}`);
     if (targetEl) targetEl.classList.add('active');
 
     document.querySelectorAll('.content-view').forEach(view => view.classList.add('hidden'));
-    document.getElementById(`view-${target}`).classList.remove('hidden');
+    const dest = document.getElementById(`view-${target}`);
+    if (dest) dest.classList.remove('hidden');
 
     if (window.innerWidth < 768) {
-        document.getElementById('sidebar').classList.add('collapsed');
-        document.getElementById('sidebar-overlay').style.display = 'none';
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) sidebar.classList.add('collapsed');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) overlay.style.display = 'none';
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -269,13 +324,12 @@ function navigateTo(target) {
     else if (target === 'slides') renderSlidesSubjectLanding();
 }
 
-// --- 1. DASHBOARD CONTROLLER ---
+// --- RENDERERS ---
 function renderDashboard() {
     const trackerContainer = document.getElementById('dashboard-tracker-list');
+    if (!trackerContainer) return;
     trackerContainer.innerHTML = '';
-
-    let totalTopics = 0;
-    let completedTopics = 0;
+    let totalTopics = 0, completedTopics = 0;
 
     Object.keys(academicDatabase).forEach(subCode => {
         const subjectBox = document.createElement('div');
@@ -303,9 +357,14 @@ function renderDashboard() {
     });
 
     const percent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
-    document.getElementById('stats-syllabus-percent').innerText = `${percent}%`;
-    document.getElementById('syllabus-progress-bar').style.width = `${percent}%`;
-    document.getElementById('stats-decks-total').innerText = `${completedTopics} / ${totalTopics}`;
+    const statsPercent = document.getElementById('stats-syllabus-percent');
+    if (statsPercent) statsPercent.innerText = `${percent}%`;
+    
+    const progressBar = document.getElementById('syllabus-progress-bar');
+    if (progressBar) progressBar.style.width = `${percent}%`;
+
+    const statsDecks = document.getElementById('stats-decks-total');
+    if (statsDecks) statsDecks.innerText = `${completedTopics} / ${totalTopics}`;
 }
 
 function toggleTrackItem(key) {
@@ -314,54 +373,39 @@ function toggleTrackItem(key) {
     renderDashboard();
 }
 
-// SVG ICONS
 const eyeIcon = `<svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5s5 2.24 5 5s-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3s3-1.34 3-3s-1.34-3-3-3z"/></svg>`;
 const downloadIcon = `<svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7l7-7zM5 18v2h14v-2H5z"/></svg>`;
 
-// --- 2. SYLLABUS CONTROLLER ---
 function renderSyllabusPage() {
     const container = document.getElementById('syllabus-cards-container');
+    if (!container) return;
     container.innerHTML = '';
-
     Object.keys(academicDatabase).forEach(code => {
         const tag = academicDatabase[code].tag;
         const fileName = `${code}_Syllabus.pdf`;
-        
-        const viewUrl = getGithubPdfViewerUrl(tag, fileName);
-        const downloadUrl = getGithubPdfDownloadUrl(tag, fileName);
-
         const card = document.createElement('div');
         card.className = 'subject-card';
         card.innerHTML = `
             <h3>${code}</h3>
             <p style="color: var(--text-muted); font-size:0.85rem; margin: 0.2rem 0 1rem;">${academicDatabase[code].name}</p>
             <div class="btn-container">
-                <button type="button" class="btn-action" data-action="view" data-tag="${tag}" data-filename="${fileName}">${eyeIcon} View</button>
-                <button type="button" class="btn-action btn-secondary" data-action="download" data-tag="${tag}" data-filename="${fileName}" data-label="${fileName}">${downloadIcon} Download</button>
+                <button type="button" class="btn-action" data-action="view">${eyeIcon} View</button>
+                <button type="button" class="btn-action btn-secondary" data-action="download">${downloadIcon} Download</button>
             </div>
         `;
-        card.querySelector('[data-action="view"]').addEventListener('click', async () => {
-            await openReleaseAsset(tag, fileName);
-        });
-        card.querySelector('[data-action="download"]').addEventListener('click', async () => {
-            await downloadReleaseAsset(tag, fileName, fileName);
-        });
+        card.querySelector('[data-action="view"]').onclick = () => openReleaseAsset(tag, fileName);
+        card.querySelector('[data-action="download"]').onclick = () => downloadReleaseAsset(tag, fileName, fileName);
         container.appendChild(card);
     });
 }
 
-// --- 3. NOTES CONTROLLER ---
 function renderNotesPage() {
     const container = document.getElementById('notes-cards-container');
+    if (!container) return;
     container.innerHTML = '';
-
     Object.keys(academicDatabase).forEach(code => {
         const tag = academicDatabase[code].tag;
         const fileName = `${code}_Notes.pdf`;
-
-        const viewUrl = getGithubPdfViewerUrl(tag, fileName);
-        const downloadUrl = getGithubPdfDownloadUrl(tag, fileName);
-
         const card = document.createElement('div');
         card.className = 'subject-card';
         card.style.borderLeftColor = "#059669";
@@ -369,26 +413,25 @@ function renderNotesPage() {
             <h3>${code}</h3>
             <p style="color: var(--text-muted); font-size:0.85rem; margin: 0.2rem 0 1rem;">${academicDatabase[code].name}</p>
             <div class="btn-container">
-                <button type="button" class="btn-action" style="background:#059669" data-action="view" data-tag="${tag}" data-filename="${fileName}">${eyeIcon} Read Notes</button>
-                <button type="button" class="btn-action btn-secondary" data-action="download" data-tag="${tag}" data-filename="${fileName}" data-label="${fileName}">${downloadIcon} PDF</button>
+                <button type="button" class="btn-action" style="background:#059669" data-action="view">${eyeIcon} Read Notes</button>
+                <button type="button" class="btn-action btn-secondary" data-action="download">${downloadIcon} PDF</button>
             </div>
         `;
-        card.querySelector('[data-action="view"]').addEventListener('click', async () => {
-            await openReleaseAsset(tag, fileName);
-        });
-        card.querySelector('[data-action="download"]').addEventListener('click', async () => {
-            await downloadReleaseAsset(tag, fileName, fileName);
-        });
+        card.querySelector('[data-action="view"]').onclick = () => openReleaseAsset(tag, fileName);
+        card.querySelector('[data-action="download"]').onclick = () => downloadReleaseAsset(tag, fileName, fileName);
         container.appendChild(card);
     });
 }
 
-// --- 4. REVISION SLIDES CONTROLLER ---
 function renderSlidesSubjectLanding() {
-    document.getElementById('slides-title').innerText = "Revision Slide Decks";
-    document.getElementById('slides-subtitle').innerText = "Select a subject folder below.";
+    const slidesTitle = document.getElementById('slides-title');
+    if (slidesTitle) slidesTitle.innerText = "Revision Slide Decks";
+
+    const slidesSubtitle = document.getElementById('slides-subtitle');
+    if (slidesSubtitle) slidesSubtitle.innerText = "Select a subject folder below.";
 
     const container = document.getElementById('slides-container');
+    if (!container) return;
     container.innerHTML = `<div class="grid-cards"></div>`;
     const grid = container.querySelector('.grid-cards');
 
@@ -412,17 +455,18 @@ function renderSlidesSubjectLanding() {
 
 function renderSlideTopicsList(subCode) {
     const tag = academicDatabase[subCode].tag;
-    document.getElementById('slides-title').innerText = `${subCode} Slides`;
-    
+    const slidesTitle = document.getElementById('slides-title');
+    if (slidesTitle) slidesTitle.innerText = `${subCode} Slides`;
+
     const container = document.getElementById('slides-container');
-    const backBtn = `
+    if (!container) return;
+    
+    container.innerHTML = `
         <button class="btn-action btn-secondary" onclick="renderSlidesSubjectLanding()" style="margin-bottom: 1rem; width:auto; padding:0.5rem 1rem;">
             <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8l8 8l1.41-1.41L7.83 13H20v-2z"/></svg>
             Back to Folders
         </button>
     `;
-    
-    container.innerHTML = backBtn;
 
     academicDatabase[subCode].units.forEach(unit => {
         const box = document.createElement('div');
@@ -431,41 +475,22 @@ function renderSlideTopicsList(subCode) {
 
         unit.topics.forEach(topic => {
             const fileName = `${topic.code}.pdf`;
-            const viewUrl = getGithubPdfViewerUrl(tag, fileName);
-            const downloadUrl = getGithubPdfDownloadUrl(tag, fileName);
-
             const row = document.createElement('div');
             row.className = 'tracker-item';
             row.style.padding = '0.6rem 0';
             row.innerHTML = `
                 <span style="font-size:0.85rem;"><strong>File: ${topic.code}.pdf</strong><br><span style="color:var(--text-muted);">${topic.name}</span></span>
                 <div class="btn-container" style="flex:none; width:auto; margin-top:0;">
-                    <button type="button" class="btn-action" style="padding:0.4rem 0.6rem; font-size:0.75rem; background:#9333ea" data-action="view" data-tag="${tag}" data-filename="${fileName}">${eyeIcon} View</button>
-                    <button type="button" class="btn-action btn-secondary" style="padding:0.4rem 0.6rem; font-size:0.75rem;" data-action="download" data-tag="${tag}" data-filename="${fileName}" data-label="${fileName}">${downloadIcon} Download</button>
+                    <button type="button" class="btn-action" style="padding:0.4rem 0.6rem; font-size:0.75rem; background:#9333ea" data-action="view">${eyeIcon} View</button>
+                    <button type="button" class="btn-action btn-secondary" style="padding:0.4rem 0.6rem; font-size:0.75rem;" data-action="download">${downloadIcon} Download</button>
                 </div>
             `;
-            row.querySelector('[data-action="view"]').addEventListener('click', async () => {
-                await openReleaseAsset(tag, fileName);
-            });
-            row.querySelector('[data-action="download"]').addEventListener('click', async () => {
-                await downloadReleaseAsset(tag, fileName, fileName);
-            });
+            row.querySelector('[data-action="view"]').onclick = () => openReleaseAsset(tag, fileName);
+            row.querySelector('[data-action="download"]').onclick = () => downloadReleaseAsset(tag, fileName, fileName);
             box.appendChild(row);
         });
         container.appendChild(box);
     });
-}
-
-// --- 6. SERVICE WORKER CLEANUP ---
-function cleanupServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations()
-            .then((registrations) => {
-                registrations.forEach((registration) => registration.unregister());
-                console.log('Service workers unregistered and cache disabled.');
-            })
-            .catch((err) => console.error('Service worker unregister failed', err));
-    }
 }
 
 // --- INITIALIZATION ---
@@ -474,5 +499,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = safeReadStorage('theme', 'light');
     applyTheme(savedTheme);
     navigateTo('dashboard');
-    cleanupServiceWorker();
 });
