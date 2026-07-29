@@ -67,23 +67,42 @@ const academicDatabase = {
         ]
     },
     "MIC-4-Urdu": {
-        name: "Study of Urdu Ghazal",
-        tag: "mic-4-urdu",
-        units: [
-            { title: "Unit 1: Tareef-o-Tareekh", topics: [
-                { code: "1.1", name: "Urdu Ghazal ki Tareef aur Haisiyat" },
-                { code: "1.2", name: "Dabistan-e-Delhi aur Lucknow ki Ghazal-goi" }
-            ]},
-            { title: "Unit 2: Wali & Mir", topics: [
-                { code: "2.1", name: "Wali Deccani: Muflisi sab bahar khoti hai" },
-                { code: "2.2", name: "Mir Taqi Mir: Nazuki us kay lab ki kya kahiye" }
-            ]},
-            { title: "Unit 3: Atish & Shad", topics: [
-                { code: "3.1", name: "Khwaja Haider Ali Atish: Sun to sahi jahan men" },
-                { code: "3.2", name: "Shad Azimabadi: Ab bhi ek umr pe jeene ka" }
-            ]}
-        ]
-    },
+    name: "Study of Urdu Ghazal (اردو غزل کا مطالعہ)",
+    tag: "mic-4-urdu",
+    units: [
+        { 
+            title: "Unit 1: Tareef, Tareekh aur Dabistan", 
+            topics: [
+                { code: "1.1.1", name: "Urdu Ghazal ki Tareef aur Haisiyat (غزل کی تعریف اور ساخت)" },
+                { code: "1.1.2", name: "Urdu Ghazal ka Aghaaz-o-Irtiga / Tareekh (غزل کا آغاز و ارتقا / تاریخ)" },
+                { code: "1.2.1", name: "Dabistan-e-Delhi ki Ghazal-goi (دبستانِ دہلی کی غزل گوئی)" },
+                { code: "1.2.2", name: "Dabistan-e-Lucknow ki Ghazal-goi (دبستانِ لکھنؤ کی غزل گوئی)" }
+            ]
+        },
+        { 
+            title: "Unit 2: Wali Deccani & Mir Taqi Mir", 
+            topics: [
+                { code: "2.1.1", name: "Wali Deccani ki Ghazal: \"Muflisi sab bahar khoti hai\" (مفلسی سب بہار کھوتی ہے) - Text & Reading" },
+                { code: "2.1.2", name: "Ghazal ki Tashreeh aur Markazi Khayal (غزل کی تشریح اور مرکزی خیال)" },
+                { code: "2.1.3", name: "Wali Deccani ke Shairana Ausaf (ولی کے شاعرانہ اوصاف)" },
+                { code: "2.2.1", name: "Mir ki Ghazal: \"Nazuki us kay lab ki kya kahiye\" (نازکی اس کے لب کی کیا کہیے) - Text & Reading" },
+                { code: "2.2.2", name: "Ghazal ki Tashreeh aur Fanni Mahasin (غزل کی تشریح اور فنی محاسن)" },
+                { code: "2.2.3", name: "Mir Taqi Mir ke Kalam ki Khusoosiyat (میر تقی میر کے کلام کی خصوصیات)" }
+            ]
+        },
+        { 
+            title: "Unit 3: Atish & Shad Azimabadi", 
+            topics: [
+                { code: "3.1.1", name: "Atish ki Ghazal: \"Sun to sahi jahan men hai tera fasana kya\" (سن تو سہی جہاں میں ہے تیرا فسانہ کیا) - Text & Reading" },
+                { code: "3.1.2", name: "Ghazal ki Tashreeh aur Usloob (غزل کی تشریح اور اسلوب)" },
+                { code: "3.1.3", name: "Atish ki Shayari mein Dabistan-e-Lucknow ke Asraat (آتش کی شاعری اور دبستانِ لکھنؤ)" },
+                { code: "3.2.1", name: "Shad ki Ghazal: \"Ab bhi ek umr pe jeene ka na andaza aya\" (اب بھی ایک عمر پہ جینے کا نہ انداز آیا) - Text & Reading" },
+                { code: "3.2.2", name: "Ghazal ki Tashreeh aur Falsafiyana Pehlu (غزل کی تشریح اور فلسفیانہ پہلو)" },
+                { code: "3.2.3", name: "Shad Azimabadi ki Ghazal-goi ki Infradiyat (شاد عظیم آبادی کی غزل گوئی کی انفرادیت)" }
+            ]
+        }
+    ]
+},
     "MIC-4-Hindi": {
         name: "आधुनिक हिन्दी कविता : छायावाद के बाद",
         tag: "mic-4-hindi",
