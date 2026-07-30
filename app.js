@@ -138,18 +138,51 @@ const academicDatabase = {
             }
         ]
     },
-    "AEC-4": {
-        name: "Social Service / Scout & Guide / Sports",
-        tag: "aec-4",
-        units: [
-            { title: "Unit 1: NCC General", topics: [{ code: "1.1", name: "Introduction to NCC: Aims & Organization" }] },
-            { title: "Unit 2: National Integration", topics: [{ code: "2.1", name: "Concept of Unity & Threats to National Security" }] },
-            { title: "Unit 3: Personality Development", topics: [{ code: "3.1", name: "Personal Traits, Empathy & Creative Thinking" }] },
-            { title: "Unit 4: Social Service", topics: [{ code: "4.1", name: "Basics of Social Service, NGOs & Youth Role" }] },
-            { title: "Practical Component", topics: [
-                { code: "P.1", name: "Military Training (Drill, Map Reading)" }
-            ]}
-        ]
+    'AEC-4': {
+    name: 'Social Service / Scout & Guide / Sports',
+    tag: 'aec-4',
+    units: [
+        {
+            title: 'Unit 1: NCC General',
+            topics: [
+                { code: '1.1', name: 'Introduction to NCC' },
+                { code: '1.2', name: 'Provisions for Cadets' },
+                { code: '1.3', name: 'Training Camps' }
+            ]
+        },
+        {
+            title: 'Unit 2: National Integration',
+            topics: [
+                { code: '2.1', name: 'Concept of Unity' },
+                { code: '2.2', name: 'Challenges' }
+            ]
+        },
+        {
+            title: 'Unit 3: Personality Development',
+            topics: [
+                { code: '3.1', name: 'Personal Traits' },
+                { code: '3.2', name: 'Mental Skills' }
+            ]
+        },
+        {
+            title: 'Unit 4: Social Service and Community Development',
+            topics: [
+                { code: '4.1', name: 'Basics of Service' },
+                { code: '4.2', name: 'Rural and Youth Development' }
+            ]
+        },
+        {
+            title: 'Practical Component',
+            topics: [
+                { code: 'P.1.1', name: 'Military Training: Drill' },
+                { code: 'P.1.2', name: 'Military Training: Field Craft & Battle Craft' },
+                { code: 'P.1.3', name: 'Military Training: Map Reading' },
+                { code: 'P.1.4', name: 'Military Training: Weapon Training' },
+                { code: 'P.2.1', name: 'Social Activity: Social Service & Community Development' },
+                { code: 'P.2.2', name: 'Social Activity: Any other Practical/Practice' }
+            ]
+        }
+    ]
     }
 };
 
